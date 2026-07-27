@@ -126,7 +126,7 @@ function App() {
       <Hero movies={heroMovies} recommendation={recommendation} />
 
       {/* Main content: search form + result */}
-      <div className="max-w-3xl mx-auto px-4 py-12 -mt-8 relative z-10">
+      <div className="max-w-3xl mx-auto px-4 py-10">
         {/* Show API connection error if backend is down */}
         {apiError && (
           <div className="bg-red-900/20 border border-red-800 rounded-lg p-4 mb-6 text-red-400 text-sm">

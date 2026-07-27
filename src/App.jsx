@@ -17,6 +17,13 @@ import Recommendation from './components/Recommendation';
  *   heroMovies:     popular movies for the scrolling poster marquee
  */
 
+// API base URL:
+//   - Empty string on localhost (Vite proxy handles it in dev)
+//   - Full Vercel URL everywhere else (deployed site + APK)
+const API = (window.location.hostname === 'localhost' && window.location.port === '5173')
+  ? ''
+  : 'https://cinesync-git-main-gnix.vercel.app';
+
 function App() {
   const [genres, setGenres] = useState([]);
   const [recommendation, setRecommendation] = useState(null);
@@ -27,7 +34,7 @@ function App() {
   // ── Fetch genres + popular movies on mount (via backend proxy) ──
   useEffect(() => {
     // Fetch genres from our backend
-    fetch('/api/genres')
+    fetch(`${API}/api/genres`)
       .then(r => r.json())
       .then(data => {
         if (data.error) throw new Error(data.error);
@@ -39,7 +46,7 @@ function App() {
       });
 
     // Fetch popular movies from our backend
-    fetch('/api/popular')
+    fetch(`${API}/api/popular`)
       .then(r => r.json())
       .then(data => {
         if (data.error) throw new Error(data.error);
@@ -49,7 +56,7 @@ function App() {
   }, []);
 
   // ── Search handler — queries our backend, not TMDb directly ──
-  async function handleSearch(genreId, maxRuntime, currentTime) {
+  async function handleSearch(genreIds, maxRuntime, currentTime, yearFrom, yearTo) {
     setLoading(true);
     setRecommendation(null);
     setApiError('');
@@ -57,11 +64,13 @@ function App() {
     try {
       // Build query params for our backend
       const params = new URLSearchParams();
-      if (genreId) params.set('genreId', genreId);
+      if (genreIds) params.set('genreId', genreIds);
       if (maxRuntime) params.set('maxRuntime', maxRuntime);
+      if (yearFrom) params.set('yearFrom', yearFrom);
+      if (yearTo) params.set('yearTo', yearTo);
 
       // Fetch matching movies from our backend
-      const resp = await fetch(`/api/discover?${params}`);
+      const resp = await fetch(`${API}/api/discover?${params}`);
       const data = await resp.json();
 
       if (data.error) throw new Error(data.error);
@@ -78,7 +87,7 @@ function App() {
       const pick = results[Math.floor(Math.random() * Math.min(results.length, 10))];
 
       // Fetch full details from our backend (to get the runtime)
-      const detailResp = await fetch(`/api/movie/${pick.id}`);
+      const detailResp = await fetch(`${API}/api/movie/${pick.id}`);
       const detail = await detailResp.json();
 
       if (detail.error) throw new Error(detail.error);
@@ -121,12 +130,12 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen">
+    <div className="flex flex-col items-center">
       {/* Hero section with scrolling poster marquee */}
       <Hero movies={heroMovies} recommendation={recommendation} />
 
       {/* Main content: search form + result */}
-      <div className="max-w-3xl mx-auto px-4 py-10">
+      <div className="max-w-3xl mx-auto px-4 pt-4 pb-10">
         {/* Show API connection error if backend is down */}
         {apiError && (
           <div className="bg-red-900/20 border border-red-800 rounded-lg p-4 mb-6 text-red-400 text-sm">

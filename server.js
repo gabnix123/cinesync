@@ -72,19 +72,44 @@ app.get('/api/movie/:id', async (req, res) => {
 });
 
 app.get('/api/discover', async (req, res) => {
-  const { genreId, maxRuntime } = req.query;
-  if (genreId && (!/^\d+$/.test(genreId) || Number(genreId) <= 0)) return res.status(400).json({ error: 'Invalid genre ID.' });
+  const { genreId, maxRuntime, yearFrom, yearTo } = req.query;
+  if (genreId && !/^\d+(,\d+)*$/.test(genreId)) return res.status(400).json({ error: 'Invalid genre ID.' });
   if (maxRuntime && (!/^\d+$/.test(maxRuntime) || Number(maxRuntime) < 10 || Number(maxRuntime) > 360))
     return res.status(400).json({ error: 'Runtime must be between 10 and 360.' });
 
   const params = { include_adult: 'false', include_video: 'false', language: 'en-US', page: '1', sort_by: 'popularity.desc' };
   if (genreId) params.with_genres = genreId;
   if (maxRuntime) params['with_runtime.lte'] = maxRuntime;
+  if (yearFrom) params['primary_release_date.gte'] = `${yearFrom}-01-01`;
+  if (yearTo) params['primary_release_date.lte'] = `${yearTo}-12-31`;
 
   try {
     const data = await fetchTMDB('/discover/movie', params);
     res.json({ results: data.results || [] });
   } catch (err) { res.status(502).json({ error: 'Failed to discover movies.' }); }
+});
+
+// ── GET /api/movie/:id/trailer — fetches YouTube trailer key ──
+app.get('/api/movie/:id/trailer', async (req, res) => {
+  const id = Number(req.params.id);
+  if (!Number.isInteger(id) || id <= 0) return res.status(400).json({ error: 'Invalid movie ID.' });
+  try {
+    const data = await fetchTMDB(`/movie/${id}/videos`, { language: 'en-US' });
+    const trailers = (data.results || []).filter(v => v.site === 'YouTube' && (v.type === 'Trailer' || v.type === 'Teaser'));
+    const video = trailers[0] || (data.results || []).find(v => v.site === 'YouTube');
+    res.json({ key: video ? video.key : null });
+  } catch (err) { res.status(502).json({ error: 'Failed to fetch trailer.' }); }
+});
+
+// ── GET /api/movie/:id/similar — fetches similar movies ──
+app.get('/api/movie/:id/similar', async (req, res) => {
+  const id = Number(req.params.id);
+  if (!Number.isInteger(id) || id <= 0) return res.status(400).json({ error: 'Invalid movie ID.' });
+  try {
+    const data = await fetchTMDB(`/movie/${id}/similar`, { language: 'en-US', page: '1' });
+    const results = (data.results || []).slice(0, 6);
+    res.json({ results });
+  } catch (err) { res.status(502).json({ error: 'Failed to fetch similar movies.' }); }
 });
 
 // ── Start ──

@@ -1,104 +1,107 @@
 import React, { useState } from 'react';
 
 /*
- * SearchForm.jsx — user input form for movie recommendations.
+ * SearchForm.jsx — user input form with multi-genre, year range, and runtime.
  *
  * Props:
- *   genres:    array of { id, name } from TMDb — used to populate the dropdown
- *   onSearch:  callback fired on submit — receives (genreId, maxRuntime, currentTime)
+ *   genres:    array of { id, name } from TMDb
+ *   onSearch:  callback fired on submit — receives (genreIds, maxRuntime, currentTime, yearFrom, yearTo)
  *   loading:   boolean that disables the button while searching
- *
- * The form has three inputs:
- *   1. Genre: a dropdown select populated from TMDb
- *   2. Max Runtime: a number input (minutes)
- *   3. Current Time: a time input (HH:MM)
- *   4. Submit button
  */
 
 function SearchForm({ genres, onSearch, loading }) {
-  const [genreId, setGenreId] = useState('');
+  const [selectedGenres, setSelectedGenres] = useState([]);
   const [maxRuntime, setMaxRuntime] = useState('180');
+  const [yearFrom, setYearFrom] = useState('2000');
+  const [yearTo, setYearTo] = useState('2025');
   const [currentTime, setCurrentTime] = useState(() => {
     return new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
   });
 
+  function toggleGenre(id) {
+    setSelectedGenres(prev =>
+      prev.includes(id) ? prev.filter(g => g !== id) : [...prev, id]
+    );
+  }
+
   function handleSubmit(e) {
     e.preventDefault();
-    // Use the current time as default if the user left it blank
     const time = currentTime || new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
-    onSearch(genreId, maxRuntime, time);
+    const genreStr = selectedGenres.join(',');
+    onSearch(genreStr, maxRuntime, time, yearFrom, yearTo);
   }
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="fade-up bg-[#121218] border border-[#222233] rounded-xl p-6 mb-8"
-    >
-      {/* ── Form row: three inputs side by side ── */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+    <form onSubmit={handleSubmit} className="fade-up bg-[#121218] border border-[#222233] rounded-xl px-6 pt-6 pb-4">
 
-        {/* ── Genre dropdown ── */}
-        <div>
-          <label className="block text-xs text-[#7a7a90] font-medium mb-1.5 tracking-wide uppercase">
-            Genre
-          </label>
-          <select
-            value={genreId}
-            onChange={e => setGenreId(e.target.value)}
-            className="w-full bg-[#0a0a0f] border border-[#222233] rounded-lg px-3 py-2.5 text-sm text-white outline-none focus:border-[#e63946] transition-colors cursor-pointer appearance-none"
-            style={{
-              backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%237a7a90'/%3E%3C/svg%3E")`,
-              backgroundRepeat: 'no-repeat',
-              backgroundPosition: 'right 12px center',
-            }}
-          >
-            <option value="">All Genres</option>
-            {genres.map(g => (
-              <option key={g.id} value={g.id}>{g.name}</option>
-            ))}
-          </select>
+      {/* ── Genre pills ── */}
+      <div className="mb-5">
+        <label className="block text-xs text-[#7a7a90] font-medium mb-2 tracking-wide uppercase">
+          Genre {selectedGenres.length > 0 && <span className="text-[#e63946]">({selectedGenres.length} selected)</span>}
+        </label>
+        <div className="flex flex-wrap gap-1.5">
+          {genres.map(g => (
+            <button
+              key={g.id}
+              type="button"
+              onClick={() => toggleGenre(g.id)}
+              className={`genre-pill text-xs px-3 py-1.5 rounded-full border ${
+                selectedGenres.includes(g.id)
+                  ? 'border-[#e63946] bg-[rgba(230,57,70,0.15)] text-[#e63946]'
+                  : 'border-[#222233] bg-[#0a0a0f] text-[#7a7a90]'
+              }`}
+            >
+              {g.name}
+            </button>
+          ))}
         </div>
+      </div>
 
-        {/* ── Max runtime ── */}
+      {/* ── Filters row ── */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+        {/* Max runtime */}
         <div>
-          <label className="block text-xs text-[#7a7a90] font-medium mb-1.5 tracking-wide uppercase">
-            Max Runtime (min)
-          </label>
+          <label className="block text-xs text-[#7a7a90] font-medium mb-1 tracking-wide uppercase">Max Runtime</label>
           <input
-            type="number"
-            min="10"
-            max="360"
-            value={maxRuntime}
+            type="number" min="10" max="360" value={maxRuntime}
             onChange={e => setMaxRuntime(e.target.value)}
-            placeholder="e.g. 180"
             className="w-full bg-[#0a0a0f] border border-[#222233] rounded-lg px-3 py-2.5 text-sm text-white outline-none focus:border-[#e63946] transition-colors"
           />
         </div>
-
-        {/* ── Current time ── */}
+        {/* Year from */}
         <div>
-          <label className="block text-xs text-[#7a7a90] font-medium mb-1.5 tracking-wide uppercase">
-            Current Time
-          </label>
+          <label className="block text-xs text-[#7a7a90] font-medium mb-1 tracking-wide uppercase">Year From</label>
           <input
-            type="time"
-            value={currentTime}
+            type="number" min="1900" max="2030" value={yearFrom}
+            onChange={e => setYearFrom(e.target.value)}
+            className="w-full bg-[#0a0a0f] border border-[#222233] rounded-lg px-3 py-2.5 text-sm text-white outline-none focus:border-[#e63946] transition-colors"
+          />
+        </div>
+        {/* Year to */}
+        <div>
+          <label className="block text-xs text-[#7a7a90] font-medium mb-1 tracking-wide uppercase">Year To</label>
+          <input
+            type="number" min="1900" max="2030" value={yearTo}
+            onChange={e => setYearTo(e.target.value)}
+            className="w-full bg-[#0a0a0f] border border-[#222233] rounded-lg px-3 py-2.5 text-sm text-white outline-none focus:border-[#e63946] transition-colors"
+          />
+        </div>
+        {/* Current time */}
+        <div>
+          <label className="block text-xs text-[#7a7a90] font-medium mb-1 tracking-wide uppercase">Current Time</label>
+          <input
+            type="time" value={currentTime}
             onChange={e => setCurrentTime(e.target.value)}
             className="w-full bg-[#0a0a0f] border border-[#222233] rounded-lg px-3 py-2.5 text-sm text-white outline-none focus:border-[#e63946] transition-colors"
           />
         </div>
-
       </div>
 
-      {/* ── Submit button ── */}
-      <button
-        type="submit"
-        disabled={loading}
-        className="w-full bg-[#e63946] hover:bg-[#ff4a57] disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold py-3 rounded-lg transition-colors text-sm tracking-wide"
-      >
+      {/* ── Submit ── */}
+      <button type="submit" disabled={loading}
+        className="w-full bg-[#e63946] hover:bg-[#ff4a57] disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold py-3 rounded-lg transition-colors text-sm tracking-wide">
         {loading ? 'Finding your movie...' : 'Find a Movie'}
       </button>
-
     </form>
   );
 }

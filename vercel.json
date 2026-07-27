@@ -1,6 +1,10 @@
 {
+  "buildCommand": "npm run build",
   "outputDirectory": "dist",
-  "rewrites": [
-    { "source": "/api/(.*)", "destination": "/api/index.js" }
-  ]
+  "framework": null,
+  "functions": {
+    "api/index.js": {
+      "includeFiles": false
+    }
+  }
 }

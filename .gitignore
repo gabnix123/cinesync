@@ -1,0 +1,6 @@
+node_modules/
+dist/
+android/
+Downloads/
+output-metadata.json
+*.log

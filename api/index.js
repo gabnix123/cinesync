@@ -107,12 +107,14 @@ export default async function handler(req, res) {
       };
       if (query.genreId) params.with_genres = query.genreId;
       if (query.maxRuntime) params['with_runtime.lte'] = query.maxRuntime;
+      if (query.yearFrom) params['primary_release_date.gte'] = `${query.yearFrom}-01-01`;
+      if (query.yearTo) params['primary_release_date.lte'] = `${query.yearTo}-12-31`;
 
       const data = await fetchTMDB('/discover/movie', params);
       return ok(res, { results: data.results || [] });
     }
 
-    // â”€â”€ Single movie details (matches /api/movie/123) â”€â”€
+    // -- Single movie details (matches /api/movie/123) --
     const movieMatch = path.match(/^\/api\/movie\/(\d+)$/);
     if (movieMatch) {
       const movieId = parseInt(movieMatch[1], 10);
@@ -121,7 +123,27 @@ export default async function handler(req, res) {
       return ok(res, data);
     }
 
-    // â”€â”€ 404 for unknown routes â”€â”€
+    // -- Trailer (matches /api/movie/123/trailer) --
+    const trailerMatch = path.match(/^\/api\/movie\/(\d+)\/trailer$/);
+    if (trailerMatch) {
+      const movieId = parseInt(trailerMatch[1], 10);
+      if (movieId <= 0) return bad(res, 'Invalid movie ID.');
+      const data = await fetchTMDB(`/movie/${movieId}/videos`, { language: 'en-US' });
+      const trailers = (data.results || []).filter(v => v.site === 'YouTube' && (v.type === 'Trailer' || v.type === 'Teaser'));
+      const video = trailers[0] || (data.results || []).find(v => v.site === 'YouTube');
+      return ok(res, { key: video ? video.key : null });
+    }
+
+    // -- Similar movies (matches /api/movie/123/similar) --
+    const similarMatch = path.match(/^\/api\/movie\/(\d+)\/similar$/);
+    if (similarMatch) {
+      const movieId = parseInt(similarMatch[1], 10);
+      if (movieId <= 0) return bad(res, 'Invalid movie ID.');
+      const data = await fetchTMDB(`/movie/${movieId}/similar`, { language: 'en-US', page: '1' });
+      return ok(res, { results: (data.results || []).slice(0, 6) });
+    }
+
+    // -- 404 for unknown routes --
     res.writeHead(404, HEADERS);
     res.end(JSON.stringify({ error: 'API route not found.' }));
 

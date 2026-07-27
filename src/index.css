@@ -1,0 +1,63 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ * Global styles for CineSync.
+ * The base layer resets browser defaults.
+ * The custom properties below are used throughout the app.
+ */
+
+:root {
+  --bg: #0a0a0f;
+  --surface: #121218;
+  --surface2: #1a1a24;
+  --border: #222233;
+  --text: #e8e8f0;
+  --text-dim: #7a7a90;
+  --accent: #e63946;
+  --accent-hover: #ff4a57;
+  --font: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+/* ── Marquee scroll animation ── */
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.marquee-track {
+  animation: marquee 60s linear infinite;
+}
+
+.marquee-track:hover {
+  animation-play-state: paused;
+}
+
+/* ── Fade-in entrance ── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-up {
+  animation: fadeUp 0.5s ease forwards;
+}
+
+.fade-up-delay {
+  animation: fadeUp 0.5s ease 0.1s forwards;
+  opacity: 0;
+}

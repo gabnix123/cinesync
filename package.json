@@ -7,7 +7,7 @@
     "dev": "vite",
     "dev:server": "node server.js",
     "dev:all": "node server.js & vite",
-    "build": "vite build",
+    "build": "npx vite build",
     "preview": "vite preview",
     "start": "node server.js"
   },

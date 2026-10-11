@@ -1,48 +1,35 @@
-<p align="center">
-  <img src="logo.png" alt="CineSync Logo" width="120" height="120" />
-</p>
+# CineSync
 
-<h1 align="center">CineSync</h1>
+A privacy-first, server-side TMDB API proxy for movie apps—designed to keep your API key secure and prevent client-side exposure.
 
-<p align="center">
-  <b>Secure Movie Recommendation Engine</b>
-</p>
+## 🔒 Core Principles
+- **API key never touches the client** (loaded server-side only)
+- **Strict rate limiting** (30 req/min/IP in dev, 60/min/IP on Vercel)
+- **Locked-down CORS** (only trusted dev origins allowed)
+- **Security headers** (CSP, X-Frame-Options, etc. via Vercel)
+- **No user data stored** (pure proxy; zero logs/storage of requests/responses)
+- **Minimal dependencies** (Express + Vercel only)
 
----
+## 🎬 Features
+- Proxy for TMDB endpoints: `/genres`, `/popular`, `/discover`, `/movie/:id`, `/movie/:id/trailer`, `/movie/:id/similar`
+- Proper HTTP status codes (e.g., `404` for missing movies, not `200` + error body)
+- Development server (`npm run dev:server`) + Vercel serverless deployment
+- Security-first by design: API key redacted from logs, errors genericized
 
-A React + Vite web app that recommends movies from TMDb based on your preferences. All TMDb API calls route through a secure, protected backend layer keeping credentials strictly isolated from the client.
+## 🛠️ Tech Stack
+- Node.js / Express
+- Vercel (serverless deployment)
+- TMDB API
+- `express-rate-limit`, `cors`, `helmet`, `dotenv`
 
-## Architecture
+## ▶️ Getting Started
+### Prerequisites
+- Node.js 16+
+- Git
+- TMDB API key (get from [themoviedb.org](https://www.themoviedb.org/))
 
-```text
-Browser (React)  ──HTTP──▶  Express Backend  ──HTTPS──▶  TMDb API
-                              │
-                         .env (API key)
-                         Protection Layer
-The browser only interacts with internal API routes. The server handles external communication, data sanitization, and request management safely out of sight from client-side inspection.Quick StartBash# 1. Install dependencies
+### Installation
+```bash
+git clone <your-cinesync-repo-url>
+cd cineSync
 npm install
-
-# 2. Start the backend server (port 3001)
-npm run dev:server
-
-# 3. In a second terminal, start the frontend (port 5173)
-npm run dev
-Open http://localhost:5173 — the frontend automatically proxies requests to the backend.Available ScriptsCommandDescriptionnpm run dev:serverStarts the Express backend on :3001npm run devStarts the Vite dev server on :5173npm run buildBuilds the frontend for productionnpm startRuns the backend in production modeEnvironment VariablesConfiguration variables live in the .env file at the root. These remain strictly server-side and are never exposed to frontend bundles.VariableRequiredPurposeTMDB_API_KEYYesExternal service authorization keyPORTNoCustom backend port (default: 3001)Security & ProtectionCineSync incorporates multiple layers of internal validation, request throttling, and header hardening to protect against abuse and unauthorized data access. All traffic is monitored and filtered before reaching external service providers.Project StructurePlaintextcinesync/
-├── server.js              # Express backend
-├── logo.png               # Project branding asset
-├── .env                   # Configuration — SERVER-SIDE ONLY
-├── package.json
-├── vite.config.js         # Frontend config + proxy
-├── tailwind.config.js
-├── postcss.config.js
-├── index.html
-├── README.md
-└── src/
-    ├── main.jsx           # React entry point
-    ├── index.css          # Tailwind + animations
-    ├── App.jsx            # Root component
-    └── components/
-        ├── Hero.jsx       # Poster marquee + clock
-        ├── SearchForm.jsx # User preference inputs
-        └── Recommendation.jsx  # Result card
-Production DeploymentFor deployment, you need to:Build the frontend: npm run buildServe dist/ as static files (Nginx, Vercel, Netlify)Run node server.js as your API serverPoint your static host to proxy /api/* to your serverOn Vercel/Netlify, you can deploy the Express backend as a serverless function or use their own serverless proxies.

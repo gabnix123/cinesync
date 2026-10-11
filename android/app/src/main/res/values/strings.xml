@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">CineSync</string>
+    <string name="title_activity_main">CineSync</string>
+    <string name="package_name">com.cinesync.app</string>
+    <string name="custom_url_scheme">com.cinesync.app</string>
+</resources>

@@ -130,29 +130,28 @@ function App() {
   }
 
   return (
-    <div className="flex flex-col items-center">
-      {/* Hero section with scrolling poster marquee */}
+    <div className="max-w-3xl mx-auto px-4 pb-10">
+      {/* Hero section */}
       <Hero movies={heroMovies} recommendation={recommendation} />
 
-      {/* Main content: search form + result */}
-      <div className="max-w-3xl mx-auto px-4 pt-4 pb-10">
-        {/* Show API connection error if backend is down */}
-        {apiError && (
-          <div className="bg-red-900/20 border border-red-800 rounded-lg p-4 mb-6 text-red-400 text-sm">
-            {apiError}
-          </div>
-        )}
+      {/* API error */}
+      {apiError && (
+        <div className="bg-red-900/20 border border-red-800 rounded-lg p-4 text-red-400 text-sm">
+          {apiError}
+        </div>
+      )}
 
-        <SearchForm
-          genres={genres}
-          onSearch={handleSearch}
-          loading={loading}
-        />
+      {/* Search form */}
+      <SearchForm
+        genres={genres}
+        onSearch={handleSearch}
+        loading={loading}
+      />
 
-        {recommendation && (
-          <Recommendation data={recommendation} />
-        )}
-      </div>
+      {/* Recommendation card — flush against form above */}
+      {recommendation && (
+        <Recommendation data={recommendation} />
+      )}
     </div>
   );
 }

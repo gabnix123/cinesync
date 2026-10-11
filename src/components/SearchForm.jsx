@@ -1,14 +1,5 @@
 import React, { useState } from 'react';
 
-/*
- * SearchForm.jsx — user input form with multi-genre, year range, and runtime.
- *
- * Props:
- *   genres:    array of { id, name } from TMDb
- *   onSearch:  callback fired on submit — receives (genreIds, maxRuntime, currentTime, yearFrom, yearTo)
- *   loading:   boolean that disables the button while searching
- */
-
 function SearchForm({ genres, onSearch, loading }) {
   const [selectedGenres, setSelectedGenres] = useState([]);
   const [maxRuntime, setMaxRuntime] = useState('180');
@@ -32,9 +23,7 @@ function SearchForm({ genres, onSearch, loading }) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="fade-up bg-[#121218] border border-[#222233] rounded-xl px-6 pt-6 pb-4">
-
-      {/* ── Genre pills ── */}
+    <form onSubmit={handleSubmit} className="bg-[#121218] border border-[#222233] rounded-xl px-6 pt-6 m-0">
       <div className="mb-5">
         <label className="block text-xs text-[#7a7a90] font-medium mb-2 tracking-wide uppercase">
           Genre {selectedGenres.length > 0 && <span className="text-[#e63946]">({selectedGenres.length} selected)</span>}
@@ -57,49 +46,35 @@ function SearchForm({ genres, onSearch, loading }) {
         </div>
       </div>
 
-      {/* ── Filters row ── */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
-        {/* Max runtime */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <div>
           <label className="block text-xs text-[#7a7a90] font-medium mb-1 tracking-wide uppercase">Max Runtime</label>
-          <input
-            type="number" min="10" max="360" value={maxRuntime}
+          <input type="number" min="10" max="360" value={maxRuntime}
             onChange={e => setMaxRuntime(e.target.value)}
-            className="w-full bg-[#0a0a0f] border border-[#222233] rounded-lg px-3 py-2.5 text-sm text-white outline-none focus:border-[#e63946] transition-colors"
-          />
+            className="w-full bg-[#0a0a0f] border border-[#222233] rounded-lg px-3 py-2.5 text-sm text-white outline-none focus:border-[#e63946] transition-colors" />
         </div>
-        {/* Year from */}
         <div>
           <label className="block text-xs text-[#7a7a90] font-medium mb-1 tracking-wide uppercase">Year From</label>
-          <input
-            type="number" min="1900" max="2030" value={yearFrom}
+          <input type="number" min="1900" max="2030" value={yearFrom}
             onChange={e => setYearFrom(e.target.value)}
-            className="w-full bg-[#0a0a0f] border border-[#222233] rounded-lg px-3 py-2.5 text-sm text-white outline-none focus:border-[#e63946] transition-colors"
-          />
+            className="w-full bg-[#0a0a0f] border border-[#222233] rounded-lg px-3 py-2.5 text-sm text-white outline-none focus:border-[#e63946] transition-colors" />
         </div>
-        {/* Year to */}
         <div>
           <label className="block text-xs text-[#7a7a90] font-medium mb-1 tracking-wide uppercase">Year To</label>
-          <input
-            type="number" min="1900" max="2030" value={yearTo}
+          <input type="number" min="1900" max="2030" value={yearTo}
             onChange={e => setYearTo(e.target.value)}
-            className="w-full bg-[#0a0a0f] border border-[#222233] rounded-lg px-3 py-2.5 text-sm text-white outline-none focus:border-[#e63946] transition-colors"
-          />
+            className="w-full bg-[#0a0a0f] border border-[#222233] rounded-lg px-3 py-2.5 text-sm text-white outline-none focus:border-[#e63946] transition-colors" />
         </div>
-        {/* Current time */}
         <div>
           <label className="block text-xs text-[#7a7a90] font-medium mb-1 tracking-wide uppercase">Current Time</label>
-          <input
-            type="time" value={currentTime}
+          <input type="time" value={currentTime}
             onChange={e => setCurrentTime(e.target.value)}
-            className="w-full bg-[#0a0a0f] border border-[#222233] rounded-lg px-3 py-2.5 text-sm text-white outline-none focus:border-[#e63946] transition-colors"
-          />
+            className="w-full bg-[#0a0a0f] border border-[#222233] rounded-lg px-3 py-2.5 text-sm text-white outline-none focus:border-[#e63946] transition-colors" />
         </div>
       </div>
 
-      {/* ── Submit ── */}
       <button type="submit" disabled={loading}
-        className="w-full bg-[#e63946] hover:bg-[#ff4a57] disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold py-3 rounded-lg transition-colors text-sm tracking-wide">
+        className="w-full bg-[#e63946] hover:bg-[#ff4a57] disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold py-3 rounded-lg transition-colors text-sm tracking-wide mt-5">
         {loading ? 'Finding your movie...' : 'Find a Movie'}
       </button>
     </form>

@@ -41,25 +41,54 @@ async function fetchTMDB(endpoint, params = {}) {
   url.searchParams.set('api_key', TMDB_KEY);
   for (const [k, v] of Object.entries(params)) url.searchParams.set(k, String(v));
   const resp = await fetch(url.toString());
-  if (!resp.ok) throw new Error(`TMDb API error: ${resp.status}`);
+
+  // Handle different TMDb response codes appropriately
+  if (!resp.ok) {
+    // Create an error with the status code for better handling
+    const error = new Error(`TMDb API error: ${resp.status}`);
+    error.status = resp.status;
+    throw error;
+  }
   return resp.json();
 }
 
 // ── Routes ──
-app.get('/api/health', (req, res) => res.json({ status: 'ok', key_loaded: !!TMDB_KEY }));
+app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
 
 app.get('/api/genres', async (req, res) => {
   try {
     const data = await fetchTMDB('/genre/movie/list', { language: 'en-US' });
     res.json({ genres: data.genres || [] });
-  } catch (err) { res.status(502).json({ error: 'Failed to fetch genres.' }); }
+  } catch (err) {
+    // Handle different TMDb error codes
+    if (err.status === 401 || err.status === 403) {
+      res.status(500).json({ error: 'Service unavailable. Please try again later.' });
+    } else if (err.status === 429) {
+      res.status(429).json({ error: 'Too many requests. Please try again later.' });
+    } else if (err.status >= 500) {
+      res.status(502).json({ error: 'Service unavailable. Please try again later.' });
+    } else {
+      res.status(502).json({ error: 'Failed to fetch genres.' });
+    }
+  }
 });
 
 app.get('/api/popular', async (req, res) => {
   try {
     const data = await fetchTMDB('/movie/popular', { language: 'en-US', page: '1' });
     res.json({ results: data.results || [] });
-  } catch (err) { res.status(502).json({ error: 'Failed to fetch popular movies.' }); }
+  } catch (err) {
+    // Handle different TMDb error codes
+    if (err.status === 401 || err.status === 403) {
+      res.status(500).json({ error: 'Service unavailable. Please try again later.' });
+    } else if (err.status === 429) {
+      res.status(429).json({ error: 'Too many requests. Please try again later.' });
+    } else if (err.status >= 500) {
+      res.status(502).json({ error: 'Service unavailable. Please try again later.' });
+    } else {
+      res.status(502).json({ error: 'Failed to fetch popular movies.' });
+    }
+  }
 });
 
 app.get('/api/movie/:id', async (req, res) => {
@@ -68,7 +97,25 @@ app.get('/api/movie/:id', async (req, res) => {
   try {
     const data = await fetchTMDB(`/movie/${id}`, { language: 'en-US' });
     res.json(data);
-  } catch (err) { res.status(502).json({ error: 'Failed to fetch movie details.' }); }
+  } catch (err) {
+    // Handle different TMDb error codes appropriately
+    if (err.status === 404) {
+      // Movie not found
+      res.status(404).json({ error: 'Movie not found.' });
+    } else if (err.status === 401 || err.status === 403) {
+      // API key issues
+      res.status(500).json({ error: 'Service unavailable. Please try again later.' });
+    } else if (err.status === 429) {
+      // Rate limited by TMDb
+      res.status(429).json({ error: 'Too many requests. Please try again later.' });
+    } else if (err.status >= 500) {
+      // TMDb server error
+      res.status(502).json({ error: 'Service unavailable. Please try again later.' });
+    } else {
+      // Other errors
+      res.status(502).json({ error: 'Failed to fetch movie details.' });
+    }
+  }
 });
 
 app.get('/api/discover', async (req, res) => {
@@ -86,7 +133,18 @@ app.get('/api/discover', async (req, res) => {
   try {
     const data = await fetchTMDB('/discover/movie', params);
     res.json({ results: data.results || [] });
-  } catch (err) { res.status(502).json({ error: 'Failed to discover movies.' }); }
+  } catch (err) {
+    // Handle different TMDb error codes
+    if (err.status === 401 || err.status === 403) {
+      res.status(500).json({ error: 'Service unavailable. Please try again later.' });
+    } else if (err.status === 429) {
+      res.status(429).json({ error: 'Too many requests. Please try again later.' });
+    } else if (err.status >= 500) {
+      res.status(502).json({ error: 'Service unavailable. Please try again later.' });
+    } else {
+      res.status(502).json({ error: 'Failed to discover movies.' });
+    }
+  }
 });
 
 // ── GET /api/movie/:id/trailer — fetches YouTube trailer key ──
@@ -98,7 +156,18 @@ app.get('/api/movie/:id/trailer', async (req, res) => {
     const trailers = (data.results || []).filter(v => v.site === 'YouTube' && (v.type === 'Trailer' || v.type === 'Teaser'));
     const video = trailers[0] || (data.results || []).find(v => v.site === 'YouTube');
     res.json({ key: video ? video.key : null });
-  } catch (err) { res.status(502).json({ error: 'Failed to fetch trailer.' }); }
+  } catch (err) {
+    // Handle different TMDb error codes
+    if (err.status === 401 || err.status === 403) {
+      res.status(500).json({ error: 'Service unavailable. Please try again later.' });
+    } else if (err.status === 429) {
+      res.status(429).json({ error: 'Too many requests. Please try again later.' });
+    } else if (err.status >= 500) {
+      res.status(502).json({ error: 'Service unavailable. Please try again later.' });
+    } else {
+      res.status(502).json({ error: 'Failed to fetch trailer.' });
+    }
+  }
 });
 
 // ── GET /api/movie/:id/similar — fetches similar movies ──
@@ -109,7 +178,18 @@ app.get('/api/movie/:id/similar', async (req, res) => {
     const data = await fetchTMDB(`/movie/${id}/similar`, { language: 'en-US', page: '1' });
     const results = (data.results || []).slice(0, 6);
     res.json({ results });
-  } catch (err) { res.status(502).json({ error: 'Failed to fetch similar movies.' }); }
+  } catch (err) {
+    // Handle different TMDb error codes
+    if (err.status === 401 || err.status === 403) {
+      res.status(500).json({ error: 'Service unavailable. Please try again later.' });
+    } else if (err.status === 429) {
+      res.status(429).json({ error: 'Too many requests. Please try again later.' });
+    } else if (err.status >= 500) {
+      res.status(502).json({ error: 'Service unavailable. Please try again later.' });
+    } else {
+      res.status(502).json({ error: 'Failed to fetch similar movies.' });
+    }
+  }
 });
 
 // ── Start ──

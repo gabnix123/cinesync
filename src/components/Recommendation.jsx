@@ -48,7 +48,7 @@ function Recommendation({ data }) {
   }
 
   return (
-    <div className="fade-up">
+    <div>
       {/* ── Main card with flip animation ── */}
       <div className="flip-card">
         <div className={`flip-card-inner ${flipped ? 'flipped' : ''}`}>
